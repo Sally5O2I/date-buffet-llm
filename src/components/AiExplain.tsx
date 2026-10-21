@@ -100,7 +100,9 @@ export function AiExplain({
     <section className="ai-box" aria-live="polite" aria-busy={state.kind === 'loading'}>
       <div className="ai-head">
         <span className="ai-badge">🤖 AI 설명</span>
-        <span className="ai-model">{settings.model} · 내 컴퓨터</span>
+        <span className="ai-model">
+          {settings.model} · {/localhost|127\.0\.0\.1/.test(settings.baseUrl) ? '내 컴퓨터' : '발표자 컴퓨터'}
+        </span>
       </div>
 
       {state.kind === 'loading' && (

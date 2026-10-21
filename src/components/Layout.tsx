@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useApp } from '../state/AppStore';
+import { AiLinkBanner } from './AiLinkBanner';
 import { BRAND_NAME, BrandIcon } from './BrandIcon';
 
 type Theme = 'system' | 'light' | 'dark';
@@ -110,6 +111,7 @@ export function Layout({ children }: { children: ReactNode }) {
         </div>
       </header>
       <main id="main" className={`main ${me ? 'with-tabbar' : ''}`} tabIndex={-1}>
+        <AiLinkBanner />
         {children}
       </main>
       {me && <div className="mobile-only">{nav}</div>}
