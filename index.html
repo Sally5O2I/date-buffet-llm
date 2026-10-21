@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="Date Buffet — 골라 담는 데이트 뷔페. 양방향 조건 매칭으로 서로 잘 맞는 사람을 추천하는 소개팅 앱" />
+    <meta name="theme-color" content="#7a1f3d" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <title>Date Buffet</title>
+    <script>
+      // 첫 화면 깜빡임 방지: 저장된 테마를 렌더 전에 적용
+      try {
+        var t = localStorage.getItem('bm.theme');
+        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
