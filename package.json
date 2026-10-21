@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "generate": "tsx scripts/generateProfiles.ts",
-    "simulate": "tsx scripts/simulate.ts"
+    "simulate": "tsx scripts/simulate.ts",
+    "ai-gateway": "tsx ai-gateway/server.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.3",

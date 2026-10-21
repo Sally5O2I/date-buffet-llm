@@ -123,6 +123,33 @@ setx OLLAMA_ORIGINS "https://sally5o2i.github.io"
 
 관련 코드: `src/domain/explainPrompt.ts`(프롬프트·파싱·검증, 순수 함수) · `src/services/llm.ts`(Ollama 호출) · `src/components/AiExplain.tsx`(화면) · `tests/explainPrompt.test.ts`
 
+### 🎤 발표용: 다른 사람 핸드폰에서도 AI 설명 쓰기
+
+브라우저의 `localhost`는 "지금 이 기기"라서, 다른 사람 핸드폰은 내 컴퓨터 AI에 닿지 못합니다.
+발표 중에만 **AI 문지기 + Cloudflare 임시 터널**로 내 컴퓨터 AI를 잠깐 열어 줍니다.
+
+```
+다른 사람 핸드폰 ──https──▶ xxxx.trycloudflare.com ──▶ AI 문지기(:8787) ──▶ Ollama(:11434)
+```
+
+1. 터널 프로그램 설치 (처음 한 번)
+   ```powershell
+   winget install --id Cloudflare.cloudflared
+   ```
+2. Ollama 실행 후, `ai-gateway\start-demo.ps1` 실행 → **공유 링크**가 출력되고 클립보드에 복사됨
+   (`https://sally5o2i.github.io/date-buffet-llm/?ai=https://xxxx.trycloudflare.com`)
+3. 링크(또는 QR)를 공유 → 들어온 사람에게 "발표자가 공유한 AI를 사용할까요?" 확인창이 뜨고, **사용하기**를 누르면 연결
+4. 끝나면 창에서 Ctrl + C → 문지기와 터널이 함께 꺼짐 (주소는 실행할 때마다 새로 생김)
+
+**AI 문지기(`ai-gateway/`)가 하는 일**
+- 앱의 소개팅 설명 요청만 통과 (시스템 프롬프트가 정확히 일치해야 함, 자유 질문 차단)
+- 모델(`qwen2.5:3b`)·출력 형식·최대 길이를 문지기가 강제 → 개인 페르소나 모델은 목록에도 안 보임
+- 앱 주소(github.io)에서 온 요청만 허용, 한 사람당 1분에 6번, 대기 최대 4개
+- 공유 링크의 AI 주소는 `https://*.trycloudflare.com`만 받고, 사용 전 반드시 확인을 받음
+
+**한계**: 컴퓨터·Ollama·터널이 켜져 있는 동안만 동작, 설명 1개 10~20초이고 한 번에 한 명씩 처리 (동시에 여러 명이면 줄을 섬).
+24시간 서비스하려면 클라우드 LLM API가 필요합니다.
+
 ## 공정성 측정 정의
 
 - **노출 수**: 다른 사람들의 TOP N 리스트에 들어간 횟수
