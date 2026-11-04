@@ -68,6 +68,30 @@ function Find-TunnelUrl {
   return $null
 }
 
+# 임시 터널은 오래 끊기면 Cloudflare에서 지워진다. 그러면 프로그램은 살아 있어도 주소는 죽은 것
+function Test-TunnelDead {
+  if (-not (Test-Path $log)) { return $false }
+  return [bool](Select-String -Path $log -Pattern 'Tunnel not found' -Quiet)
+}
+
+# 터널을 새로 열고 주소를 돌려준다 (주소는 열 때마다 새로 생겨요)
+function Start-Tunnel {
+  if ($script:tunnel -and -not $script:tunnel.HasExited) { Stop-Process -Id $script:tunnel.Id -Force -ErrorAction SilentlyContinue }
+  foreach ($t in @(Get-Tunnels)) { Stop-Process -Id $t.ProcessId -Force -ErrorAction SilentlyContinue }
+  Start-Sleep -Seconds 1
+  if (Test-Path $log) { Remove-Item $log -Force }
+  # http2: 와이파이가 바뀌거나 잠깐 끊겨도 기본값(quic)보다 잘 버틴다
+  $script:tunnel = Start-Process -FilePath $cf -ArgumentList 'tunnel', '--no-autoupdate', '--protocol', 'http2', '--url', "http://localhost:$Port" -RedirectStandardError $log -PassThru -WindowStyle Hidden
+  Write-Host '⏳ 인터넷 주소를 만드는 중… (10초 정도)'
+  for ($i = 0; $i -lt 60; $i++) {
+    Start-Sleep -Milliseconds 500
+    if ($script:tunnel.HasExited) { break }
+    $u = Find-TunnelUrl
+    if ($u) { return $u }
+  }
+  return $null
+}
+
 function Show-Link([string]$url) {
   $share = "$site`?ai=$url"
   Write-Host ''
@@ -92,7 +116,7 @@ try {
 # 2) 이미 켜져 있으면 아무것도 건드리지 않는다
 $running = @(Get-Tunnels)
 $existing = Find-TunnelUrl
-if ($running.Count -gt 0 -and $existing -and (Test-Gateway)) {
+if ($running.Count -gt 0 -and $existing -and (Test-Gateway) -and -not (Test-TunnelDead)) {
   Write-Host ''
   Write-Host '✅ 이미 켜져 있어요. 그대로 두고 지금 링크만 다시 보여 드려요:' -ForegroundColor Green
   Show-Link $existing
@@ -134,27 +158,22 @@ if (-not (Test-Path $tsx)) {
 $gw = $null
 $tunnel = $null
 try {
-  # 4) 반쯤 꺼진 채 남아 있는 것 정리 (터널을 먼저 꺼야 기록 파일을 지울 수 있어요)
-  if ($running.Count -gt 0) {
-    foreach ($t in $running) { Stop-Process -Id $t.ProcessId -Force -ErrorAction SilentlyContinue }
-    Start-Sleep -Seconds 1
+  # 4) 켜져 있는 동안 컴퓨터가 절전으로 들어가지 않게 (이 창을 끄면 자동으로 풀려요)
+  try {
+    Add-Type -Namespace DateBuffet -Name Power -MemberDefinition '[DllImport("kernel32.dll")] public static extern uint SetThreadExecutionState(uint esFlags);'
+    [void][DateBuffet.Power]::SetThreadExecutionState([uint32]2147483651)  # 계속 + 시스템 + 화면 유지
+    Write-Host '✅ 켜져 있는 동안 절전 모드를 막아 둘게요 (노트북 덮개는 닫지 마세요)'
+  } catch {
+    Write-Host '⚠️ 절전 방지를 설정하지 못했어요. 컴퓨터가 잠들지 않게 지켜봐 주세요.' -ForegroundColor Yellow
   }
-  Stop-Gateway
-  if (Test-Path $log) { Remove-Item $log -Force }
 
-  # 5) 문지기 실행
+  # 5) 문지기 실행 (반쯤 꺼진 채 남아 있는 것은 먼저 정리)
+  foreach ($t in $running) { Stop-Process -Id $t.ProcessId -Force -ErrorAction SilentlyContinue }
+  Stop-Gateway
   Start-Gateway
 
-  # 6) 터널 실행 (주소는 실행할 때마다 새로 생겨요)
-  $tunnel = Start-Process -FilePath $cf -ArgumentList 'tunnel', '--no-autoupdate', '--url', "http://localhost:$Port" -RedirectStandardError $log -PassThru -WindowStyle Hidden
-
-  Write-Host '⏳ 인터넷 주소를 만드는 중… (10초 정도)'
-  $url = $null
-  for ($i = 0; $i -lt 60 -and -not $url; $i++) {
-    Start-Sleep -Milliseconds 500
-    if ($tunnel.HasExited) { break }
-    $url = Find-TunnelUrl
-  }
+  # 6) 터널 실행
+  $url = Start-Tunnel
   if (-not $url) { throw "터널 주소를 받지 못했어요. 인터넷 연결을 확인하고 다시 실행해 주세요. (기록: $log)" }
 
   Write-Host ''
@@ -163,16 +182,28 @@ try {
   Write-Host '이 창을 켜 두는 동안만 AI 설명이 동작해요. 끝내려면 Ctrl + C'
   Write-Host ''
 
-  # 7) 지켜보기: 문지기가 꺼지면 다시 켠다
-  while (-not $tunnel.HasExited) {
+  # 7) 지켜보기: 문지기가 꺼지면 다시 켜고, 터널이 죽으면 새로 연다
+  while ($true) {
     Start-Sleep -Seconds 5
     if (-not (Test-Gateway)) {
       Write-Host '⚠️ 문지기가 꺼져서 다시 켜는 중…' -ForegroundColor Yellow
       Stop-Gateway
       Start-Gateway
     }
+    if ($tunnel.HasExited -or (Test-TunnelDead)) {
+      Write-Host ''
+      Write-Host '⚠️ 터널이 끊어져서 새로 여는 중… 주소가 바뀌니 새 링크를 다시 공유해야 해요!' -ForegroundColor Yellow
+      $new = Start-Tunnel
+      if ($new) {
+        Write-Host ''
+        Write-Host '✅ 새 링크예요. 이전 링크는 이제 안 돼요:' -ForegroundColor Green
+        Show-Link $new
+      } else {
+        Write-Host '❌ 새 주소를 못 받았어요. 인터넷을 확인해 주세요. 잠시 후 다시 시도할게요.' -ForegroundColor Red
+        Start-Sleep -Seconds 15
+      }
+    }
   }
-  Write-Host '⚠️ 터널이 꺼졌어요. 다시 실행해 주세요.' -ForegroundColor Yellow
 } catch {
   Write-Host ''
   Write-Host "❌ $_" -ForegroundColor Red
