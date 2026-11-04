@@ -13,9 +13,7 @@ import {
   ADJACENCY,
   AGE_MAX,
   AGE_MIN,
-  ALL_BODY_TYPES,
   ALL_GENDERS,
-  BODY_TYPE_LABEL,
   HEIGHT_MAX,
   HEIGHT_MIN,
   COMPLEMENT_PAIRS,
@@ -30,7 +28,7 @@ import type { Preference, Profile, RegionMode, SoftItem } from './types';
 
 // ───────────────────────── 타입 ─────────────────────────
 
-export type RejectCode = 'gender' | 'age' | 'height' | 'body' | 'region' | 'smoking';
+export type RejectCode = 'gender' | 'age' | 'height' | 'region' | 'smoking';
 
 export interface Rejection {
   code: RejectCode;
@@ -143,13 +141,9 @@ export function hardFilter(viewer: Profile, target: Profile): Omit<Rejection, 's
   if (target.age < p.ageMin || target.age > p.ageMax) {
     out.push({ code: 'age', message: `나이 ${target.age}세가 원하는 범위 ${p.ageMin}~${p.ageMax}세 밖이에요` });
   }
-  // 키·체형을 아직 입력하지 않은 예전 프로필(null)은 조건을 통과한 것으로 본다
+  // 키를 아직 입력하지 않은 예전 프로필(null)은 조건을 통과한 것으로 본다
   if (target.height != null && (target.height < p.heightMin || target.height > p.heightMax)) {
     out.push({ code: 'height', message: `키 ${target.height}cm가 원하는 범위 ${p.heightMin}~${p.heightMax}cm 밖이에요` });
-  }
-  if (target.bodyType != null && !p.bodyTypes.includes(target.bodyType)) {
-    const wanted = p.bodyTypes.map((b) => BODY_TYPE_LABEL[b]).join('·') || '없음';
-    out.push({ code: 'body', message: `원하는 체형(${wanted})이 아니에요 (${BODY_TYPE_LABEL[target.bodyType]})` });
   }
   if (!isRegionAllowed(p.regionMode, viewer.region, target.region)) {
     const rule = p.regionMode === 'same' ? '같은 시/도만' : '같은 시/도 또는 인접 지역만';
@@ -324,7 +318,6 @@ function emptyCounts(): RecommendResult['rejectionCounts'] {
     gender: { mine: 0, theirs: 0 },
     age: { mine: 0, theirs: 0 },
     height: { mine: 0, theirs: 0 },
-    body: { mine: 0, theirs: 0 },
     region: { mine: 0, theirs: 0 },
     smoking: { mine: 0, theirs: 0 },
   };
@@ -352,9 +345,6 @@ export function suggestRelaxations(me: Profile, others: Profile[]): Suggestion[]
   const hMax = Math.min(HEIGHT_MAX, p.heightMax + 5);
   if (hMin !== p.heightMin || hMax !== p.heightMax) {
     tries.push({ id: 'height', label: `키 범위를 ${hMin}~${hMax}cm로 넓혀보세요`, patch: { heightMin: hMin, heightMax: hMax } });
-  }
-  if (p.bodyTypes.length < ALL_BODY_TYPES.length) {
-    tries.push({ id: 'body', label: '원하는 체형을 "모두"로 넓혀보세요', patch: { bodyTypes: [...ALL_BODY_TYPES] } });
   }
   if (p.regionMode !== 'any') {
     tries.push({ id: 'region', label: '지역 조건을 "상관없음"으로 바꿔보세요 (가까우면 점수는 여전히 높아요)', patch: { regionMode: 'any' } });

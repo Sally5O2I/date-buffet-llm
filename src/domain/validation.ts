@@ -43,7 +43,6 @@ export function validateProfile(p: Omit<Profile, 'id' | 'createdAt'>): ProfileEr
   if (p.height == null || !Number.isInteger(p.height) || p.height < HEIGHT_MIN || p.height > HEIGHT_MAX) {
     e.height = `키는 ${HEIGHT_MIN}~${HEIGHT_MAX}cm 사이 정수로 입력해 주세요.`;
   }
-  if (!p.bodyType) e.bodyType = '체형을 선택해 주세요.';
   const job = (p.job ?? '').trim();
   if (job.length < 2 || job.length > JOB_MAX) e.job = `직업을 2~${JOB_MAX}자로 입력해 주세요. (밝히기 싫으면 "비공개")`;
   else if (containsContactInfo(job)) e.job = CONTACT_ERROR;
@@ -57,7 +56,6 @@ export function validateProfile(p: Omit<Profile, 'id' | 'createdAt'>): ProfileEr
   const bio = p.bio.trim();
   if (bio.length < 5 || bio.length > 60) e.bio = '한 줄 소개는 5~60자로 입력해 주세요.';
   else if (containsContactInfo(bio)) e.bio = CONTACT_ERROR;
-  if (!p.photo) e.photo = '사진을 등록해 주세요. (필수)';
 
   const pref = p.preference;
   if (pref.genders.length === 0) e.prefGenders = '보고 싶은 성별을 1개 이상 선택해 주세요.';
@@ -73,7 +71,6 @@ export function validateProfile(p: Omit<Profile, 'id' | 'createdAt'>): ProfileEr
   ) {
     e.prefHeight = `키 범위를 ${HEIGHT_MIN}~${HEIGHT_MAX}cm 안에서, 최소 ≤ 최대로 입력해 주세요.`;
   }
-  if (pref.bodyTypes.length === 0) e.prefBody = '원하는 체형을 1개 이상 선택해 주세요.';
   if (pref.important.length !== 3) e.important = `중요한 항목을 정확히 3개 골라 주세요. (지금 ${pref.important.length}개)`;
   return e;
 }

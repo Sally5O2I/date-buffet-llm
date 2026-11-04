@@ -3,7 +3,7 @@
  *
  * 원칙
  *  - 점수 계산은 matching.ts가 한다. LLM은 이미 계산된 사실을 '설명'만 한다.
- *  - LLM에는 설명에 필요한 항목만 보낸다. 사진·키·체형은 보내지 않는다 (외모 평가를 막기 위해).
+ *  - LLM에는 설명에 필요한 항목만 보낸다. 사진·키는 보내지 않는다 (외모 평가를 막기 위해).
  *  - 한 줄 소개는 사용자가 쓴 글이라 지시문이 섞여 있을 수 있다 → 따옴표로 감싸 '자료'로만 쓰게 한다.
  */
 import { DRINKING_SHORT, GENDER_LABEL, INTERESTS, SMOKING_LABEL, mbtiLabel } from './constants';

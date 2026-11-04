@@ -1,18 +1,10 @@
-import type { BodyType, Gender, RegionMode, Smoking, SmokingAllow, SoftItem } from './types';
+import type { Gender, RegionMode, Smoking, SmokingAllow, SoftItem } from './types';
 
 export const AGE_MIN = 19;
 export const AGE_MAX = 60;
 
 export const HEIGHT_MIN = 130;
 export const HEIGHT_MAX = 230;
-
-export const BODY_TYPE_OPTIONS: { value: BodyType; label: string }[] = [
-  { value: 'slim', label: '마름' },
-  { value: 'normal', label: '보통' },
-  { value: 'chubby', label: '통통' },
-];
-export const BODY_TYPE_LABEL: Record<BodyType, string> = { slim: '마름', normal: '보통', chubby: '통통' };
-export const ALL_BODY_TYPES: BodyType[] = ['slim', 'normal', 'chubby'];
 
 export const MBTI_TYPES = [
   'ISTJ', 'ISFJ', 'INFJ', 'INTJ', 'ISTP', 'ISFP', 'INFP', 'INTP',
@@ -32,11 +24,9 @@ export function mbtiLabel(mbti: string | null): string | null {
   return mbti === MBTI_UNKNOWN ? 'MBTI 모름' : mbti;
 }
 
-/** 키·체형·MBTI 한 줄 표시 (입력 안 된 항목은 생략) — 예: "175cm · 보통 · ENFP" */
-export function bodyLine(p: { height: number | null; bodyType: BodyType | null; mbti: string | null }): string {
-  return [p.height != null ? `${p.height}cm` : null, p.bodyType ? BODY_TYPE_LABEL[p.bodyType] : null, mbtiLabel(p.mbti)]
-    .filter(Boolean)
-    .join(' · ');
+/** 키·MBTI 한 줄 표시 (입력 안 된 항목은 생략) — 예: "175cm · ENFP" */
+export function detailLine(p: { height: number | null; mbti: string | null }): string {
+  return [p.height != null ? `${p.height}cm` : null, mbtiLabel(p.mbti)].filter(Boolean).join(' · ');
 }
 
 export const GENDER_OPTIONS: { value: Gender; label: string }[] = [

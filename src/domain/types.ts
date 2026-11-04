@@ -2,8 +2,6 @@
 
 export type Gender = 'male' | 'female' | 'other';
 export type Smoking = 'non' | 'sometimes' | 'smoker';
-/** 체형(몸무게): 마름 / 보통 / 통통 */
-export type BodyType = 'slim' | 'normal' | 'chubby';
 /** 상대 흡연 허용 범위: 비흡연자만 / 가끔까지 / 상관없음 */
 export type SmokingAllow = 'none' | 'sometimes' | 'any';
 /** 지역 조건: 상관없음(점수만) / 같은 시·도 + 인접 / 같은 시·도만 */
@@ -19,8 +17,6 @@ export interface Preference {
   /** 원하는 키 범위(cm). 상대의 키가 범위 밖이면 하드 필터 탈락 */
   heightMin: number;
   heightMax: number;
-  /** 원하는 체형(복수). 상대의 체형이 여기에 없으면 하드 필터 탈락 */
-  bodyTypes: BodyType[];
   regionMode: RegionMode;
   smokingAllow: SmokingAllow;
   /** 중요하게 보는 항목 3개 (가중치 2배) */
@@ -36,8 +32,6 @@ export interface Profile {
   region: string;
   /** 키(cm). 이 항목이 생기기 전에 만든 프로필은 null (조건 검사에서 통과로 본다) */
   height: number | null;
-  /** 체형. 예전 프로필은 null */
-  bodyType: BodyType | null;
   /** MBTI 16유형 또는 'unknown'(잘 모름). 예전 프로필은 null */
   mbti: string | null;
   /** 직업 (자유 입력, 표시용). 예전 프로필은 null */
