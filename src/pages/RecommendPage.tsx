@@ -8,7 +8,6 @@ const CODE_LABEL: Record<RejectCode, string> = {
   gender: '성별',
   age: '나이',
   height: '키',
-  body: '체형',
   region: '지역',
   smoking: '흡연',
 };

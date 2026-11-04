@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { OnlineBadge } from '../components/MatchCard';
 import { openGameInvite } from '../components/GameLayer';
-import { bodyLine, GENDER_LABEL, SMOKING_LABEL, DRINKING_LABELS } from '../domain/constants';
+import { detailLine, GENDER_LABEL, SMOKING_LABEL, DRINKING_LABELS } from '../domain/constants';
 import { combineScores, directionalScore, mutualRejections } from '../domain/matching';
 import type { Profile } from '../domain/types';
 import { useApp } from '../state/AppStore';
@@ -168,10 +168,10 @@ export function DiscoverPage() {
                   <p className="muted" style={{ fontSize: '0.9rem' }}>
                     {GENDER_LABEL[top.profile.gender]} · {top.profile.region}
                     {top.profile.job && ` · ${top.profile.job}`} · {SMOKING_LABEL[top.profile.smoking]} · 음주 {DRINKING_LABELS[top.profile.drinking]}
-                    {bodyLine(top.profile) && (
+                    {detailLine(top.profile) && (
                       <>
                         <br />
-                        {bodyLine(top.profile)}
+                        {detailLine(top.profile)}
                       </>
                     )}
                   </p>

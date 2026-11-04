@@ -5,9 +5,7 @@ import { Steps } from '../components/Steps';
 import {
   AGE_MAX,
   AGE_MIN,
-  ALL_BODY_TYPES,
   ALL_GENDERS,
-  BODY_TYPE_OPTIONS,
   DRINKING_LABELS,
   GENDER_OPTIONS,
   HEIGHT_MAX,
@@ -25,7 +23,8 @@ import {
   SOFT_ITEMS,
   SOFT_ITEM_LABEL,
 } from '../domain/constants';
-import type { BodyType, Gender, Profile, SoftItem } from '../domain/types';
+import { makeAvatar } from '../data/avatars';
+import type { Gender, Profile, SoftItem } from '../domain/types';
 import { validateProfile, type ProfileErrors } from '../domain/validation';
 import { StorageFullError } from '../repository/Repository';
 import { useApp } from '../state/AppStore';
@@ -39,7 +38,6 @@ const EMPTY: Draft = {
   gender: undefined as unknown as Gender,
   region: '',
   height: null,
-  bodyType: null,
   mbti: null,
   job: null,
   interests: [],
@@ -54,7 +52,6 @@ const EMPTY: Draft = {
     ageMax: 35,
     heightMin: HEIGHT_MIN,
     heightMax: HEIGHT_MAX,
-    bodyTypes: [...ALL_BODY_TYPES],
     regionMode: 'any',
     smokingAllow: 'any',
     important: [],
@@ -149,6 +146,8 @@ export function ProfilePage() {
         nickname: draft.nickname.trim(),
         bio: draft.bio.trim(),
         job: (draft.job ?? '').trim(),
+        // 사진은 선택 사항이라, 없으면 닉네임으로 정해지는 기본 그림을 넣는다
+        photo: draft.photo || makeAvatar([...draft.nickname.trim()].reduce((n, ch) => n + ch.charCodeAt(0), 0), draft.gender),
       });
       navigate('/recommend');
     } catch (err) {
@@ -193,8 +192,8 @@ export function ProfilePage() {
             <h2 id="sec-me">내 정보</h2>
             <p className="hint">상대에게 보여지는 정보예요.</p>
 
-            <div className="field" data-error={!!errors.photo}>
-              <span className="label" id="lbl-photo">사진<span className="req" aria-hidden="true">*</span><span className="sr-only">(필수)</span></span>
+            <div className="field">
+              <span className="label" id="lbl-photo">사진 <span className="sub">선택 · 안 넣으면 기본 그림이 들어가요</span></span>
               <div className="photo-upload">
                 {draft.photo ? (
                   <img className="photo-preview" src={draft.photo} alt="등록한 프로필 사진 미리보기" />
@@ -209,8 +208,6 @@ export function ProfilePage() {
                       accept="image/*"
                       className="sr-only"
                       aria-labelledby="lbl-photo"
-                      aria-invalid={!!errors.photo}
-                      aria-describedby={errors.photo ? 'err-photo' : undefined}
                       onChange={(e) => onPhoto(e.target.files?.[0])}
                     />
                   </label>
@@ -218,7 +215,6 @@ export function ProfilePage() {
                 </div>
               </div>
               {photoError && <p className="error" role="alert">{photoError}</p>}
-              {err('photo')}
             </div>
 
             <div className="field">
@@ -347,17 +343,6 @@ export function ProfilePage() {
               {err('job')}
             </div>
 
-            <div className="field" data-error={!!errors.bodyType}>
-              <span className="label" id="lbl-body">몸무게(체형)<span className="req" aria-hidden="true">*</span></span>
-              <RadioChips<BodyType>
-                labelledBy="lbl-body"
-                options={BODY_TYPE_OPTIONS}
-                value={draft.bodyType ?? undefined}
-                onChange={(v) => set('bodyType', v)}
-              />
-              {err('bodyType')}
-            </div>
-
             <div className="field" data-error={!!errors.interests}>
               <span className="label" id="lbl-interests">
                 관심사<span className="req" aria-hidden="true">*</span> <span className="sub">최대 8개 · {draft.interests.length}개 선택</span>
@@ -413,7 +398,7 @@ export function ProfilePage() {
           <section className="card section" aria-labelledby="sec-pref">
             <h2 id="sec-pref">원하는 상대</h2>
             <p className="hint">
-              성별·나이·키·체형·흡연(그리고 선택한 경우 지역)은 <b>절대 조건</b>이에요. 서로의 조건을 모두 통과해야 추천에 나와요.
+              성별·나이·키·흡연(그리고 선택한 경우 지역)은 <b>절대 조건</b>이에요. 서로의 조건을 모두 통과해야 추천에 나와요.
             </p>
 
             <div className="field" data-error={!!errors.prefGenders}>
@@ -518,20 +503,6 @@ export function ProfilePage() {
               </div>
               {err('prefHeight')}
             </fieldset>
-
-            <div className="field" data-error={!!errors.prefBody}>
-              <span className="label" id="lbl-pbody">
-                원하는 체형<span className="req" aria-hidden="true">*</span> <span className="sub">복수 선택 · 모두 고르면 상관없음</span>
-              </span>
-              <Chips<BodyType>
-                labelledBy="lbl-pbody"
-                options={BODY_TYPE_OPTIONS}
-                selected={p.bodyTypes}
-                onChange={(v) => setPref('bodyTypes', v)}
-                invalid={!!errors.prefBody}
-              />
-              {err('prefBody')}
-            </div>
 
             <div className="field">
               <span className="label" id="lbl-rmode">지역 조건</span>
