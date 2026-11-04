@@ -23,7 +23,7 @@ export function AiLinkBanner() {
       </p>
       <p className="muted" style={{ fontSize: '0.88rem' }}>
         사용하면 추천 카드의 "AI 설명 보기"가 <b>발표자 컴퓨터의 AI</b>로 설명을 만들어요. 그때 두 사람의 닉네임·관심사·성격·한 줄 소개
-        같은 정보가 이 주소로 전송돼요 (사진·키·체형은 보내지 않아요).
+        같은 정보가 이 주소로 전송돼요 (사진·키는 보내지 않아요).
       </p>
       <p className="ai-link-url">{url}</p>
       <div className="ai-actions">

@@ -1,6 +1,6 @@
 import { useId, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { bodyLine, GENDER_LABEL } from '../domain/constants';
+import { detailLine, GENDER_LABEL } from '../domain/constants';
 import type { Candidate } from '../domain/matching';
 import { messagePermission, swipeOf } from '../domain/social';
 import { useApp } from '../state/AppStore';
@@ -48,10 +48,10 @@ export function MatchCard({ candidate, highlight }: { candidate: Candidate; high
           <p className="meta">
             {p.age}세 · {GENDER_LABEL[p.gender]} · {p.region}
             {p.job && ` · ${p.job}`}
-            {bodyLine(p) && (
+            {detailLine(p) && (
               <>
                 <br />
-                {bodyLine(p)}
+                {detailLine(p)}
               </>
             )}
           </p>
